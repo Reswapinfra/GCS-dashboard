@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Reswap GCS</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0c10;--bg1:#10131a;--bg2:#161b24;--bg3:#1e2636;
+  --border:#ffffff0f;--border2:#ffffff18;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#475569;
+  --accent:#3b82f6;--accent-dim:#1d4ed8;--accent-glow:#3b82f620;
+  --green:#22c55e;--green-dim:#15803d;--green-bg:#052e16;
+  --amber:#f59e0b;--amber-bg:#1c0f00;
+  --red:#ef4444;--red-bg:#1f0a0a;
+  --purple:#a855f7;--purple-bg:#2e1065;
+  --radius:8px;--font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mono:'SF Mono','Fira Code',monospace;
+}
+html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;overflow:hidden}
+
+/* ── Login screen ── */
+#login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;flex-direction:column;gap:32px}
+.login-card{background:var(--bg2);border:0.5px solid var(--border2);border-radius:16px;padding:40px;width:360px;display:flex;flex-direction:column;gap:20px}
+.login-logo{font-size:22px;font-weight:600;letter-spacing:-0.5px;color:var(--text)}
+.login-logo span{color:var(--accent)}
+.login-tagline{font-size:12px;color:var(--text3);margin-top:-14px}
+.login-label{font-size:11px;color:var(--text2);margin-bottom:5px;font-weight:500}
+.login-input{width:100%;background:var(--bg1);border:0.5px solid var(--border2);border-radius:var(--radius);padding:9px 12px;color:var(--text);font-size:13px;outline:none;font-family:var(--font)}
+.login-input:focus{border-color:var(--accent)}
+.login-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:10px;font-size:13px;font-weight:500;cursor:pointer;width:100%;transition:background .15s}
+.login-btn:hover{background:var(--accent-dim)}
+.login-accounts{display:flex;flex-direction:column;gap:6px}
+.acct-pill{background:var(--bg1);border:0.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:border-color .1s}
+.acct-pill:hover{border-color:var(--accent);color:var(--text)}
+.acct-role{font-size:10px;color:var(--text3)}
+
+/* ── App shell ── */
+#app{display:none;grid-template-columns:52px 200px 1fr;grid-template-rows:44px 1fr;height:100vh}
+
+/* ── Topbar ── */
+.topbar{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:0 16px 0 0;background:var(--bg1);border-bottom:0.5px solid var(--border);z-index:10}
+.topbar-l{display:flex;align-items:center;gap:0}
+.topbar-logo{width:52px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent);letter-spacing:-0.3px;border-right:0.5px solid var(--border);height:44px;flex-shrink:0}
+.topbar-site{display:flex;align-items:center;gap:8px;padding:0 16px;border-right:0.5px solid var(--border);height:44px}
+.site-name{font-size:12px;font-weight:500;color:var(--text)}
+.site-sub{font-size:10px;color:var(--text3)}
+.topbar-r{display:flex;align-items:center;gap:12px}
+.live-badge{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.shift-chip{font-size:11px;color:var(--text2);background:var(--bg2);border:0.5px solid var(--border);border-radius:6px;padding:3px 9px;font-variant-numeric:tabular-nums}
+.user-chip{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);cursor:pointer}
+.user-avatar{width:24px;height:24px;border-radius:50%;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff}
+.logout-btn{font-size:11px;color:var(--text3);cursor:pointer;padding:3px 8px;border-radius:5px;transition:color .1s}
+.logout-btn:hover{color:var(--red)}
+
+/* ── Icon rail ── */
+.icon-rail{background:var(--bg1);border-right:0.5px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:8px 0;gap:2px}
+.rail-btn{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);transition:all .15s;position:relative}
+.rail-btn:hover{background:var(--bg2);color:var(--text2)}
+.rail-btn.active{background:var(--accent-glow);color:var(--accent)}
+.rail-btn i{font-size:18px}
+.rail-sep{width:24px;height:0.5px;background:var(--border);margin:4px 0}
+.rail-spacer{flex:1}
+
+/* ── Sidebar ── */
+.sidebar{background:var(--bg1);border-right:0.5px solid var(--border);padding:12px 8px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.sidebar-section{font-size:10px;font-weight:500;color:var(--text3);padding:10px 8px 4px;letter-spacing:.08em;text-transform:uppercase}
+.sidebar-item{display:flex;align-items:center;justify-content:space-between;padding:7px 8px;border-radius:6px;cursor:pointer;transition:background .1s}
+.sidebar-item:hover{background:var(--bg2)}
+.sidebar-item.active{background:var(--accent-glow)}
+.sidebar-item-l{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2)}
+.sidebar-item.active .sidebar-item-l{color:var(--accent)}
+.sidebar-item i{font-size:15px}
+.badge{font-size:9px;font-weight:600;padding:1px 5px;border-radius:999px}
+.badge-blue{background:var(--accent-glow);color:var(--accent)}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-amber{background:var(--amber-bg);color:var(--amber)}
+
+/* ── Main ── */
+.main{display:grid;grid-template-columns:1fr 320px;grid-template-rows:1fr 200px;overflow:hidden}
+
+/* ── Map ── */
+.map-area{position:relative;background:var(--bg);overflow:hidden;border-right:0.5px solid var(--border)}
+.map-canvas{position:absolute;inset:0}
+.map-overlay{position:absolute;top:12px;left:12px;display:flex;flex-direction:column;gap:6px}
+.map-chip{background:var(--bg2);border:0.5px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--text2);display:flex;align-items:center;gap:6px}
+.map-controls{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:4px}
+.map-btn{width:28px;height:28px;background:var(--bg2);border:0.5px solid var(--border2);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:14px;transition:all .15s}
+.map-btn:hover{border-color:var(--accent);color:var(--accent)}
+/* Site elements */
+.site-boundary{position:absolute;border:0.5px dashed #ffffff12;border-radius:50%}
+.waypoint-pin{position:absolute;transform:translate(-50%,-50%);cursor:pointer}
+.wp-dot{width:8px;height:8px;border-radius:50%;border:1.5px solid}
+.wp-ins{border-color:var(--accent);background:var(--accent-glow)}
+.wp-del{border-color:var(--green);background:var(--green-bg)}
+.station-pin{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;z-index:5}
+.stn-icon{width:22px;height:22px;border-radius:6px;background:var(--amber);display:flex;align-items:center;justify-content:center;font-size:11px;color:#000;font-weight:700;border:2px solid #000;box-shadow:0 0 0 1px var(--amber)}
+.stn-label{font-size:9px;color:var(--amber);font-weight:600;white-space:nowrap;background:var(--bg);border-radius:3px;padding:1px 4px}
+.stn-queue{position:absolute;top:-4px;right:-4px;width:12px;height:12px;background:var(--red);border-radius:50%;font-size:8px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.home-pin{position:absolute;transform:translate(-50%,-50%);z-index:4}
+.home-icon{width:16px;height:16px;border-radius:50%;background:var(--text);border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--bg)}
+.drone-pin{position:absolute;transform:translate(-50%,-50%);z-index:6;cursor:pointer;transition:left 4s ease-in-out,top 4s ease-in-out}
+.drone-icon{width:14px;height:14px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700}
+.d-flying{border-color:var(--accent);background:var(--accent-glow);color:var(--accent)}
+.d-swapping{border-color:var(--amber);background:var(--amber-bg);color:var(--amber)}
+.d-charging{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+.d-waiting{border-color:var(--text3);background:var(--bg2);color:var(--text3)}
+.drone-label{font-size:8px;color:var(--text2);white-space:nowrap;background:var(--bg1);border-radius:2px;padding:0 3px;margin-top:1px}
+.reroute-line{position:absolute;pointer-events:none}
+/* Low battery alert overlay */
+.alert-banner{position:absolute;bottom:12px;left:12px;right:12px;background:var(--amber-bg);border:0.5px solid var(--amber);border-radius:8px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--amber);z-index:10;transition:opacity .3s}
+.alert-banner.hidden{opacity:0;pointer-events:none}
+.alert-l{display:flex;align-items:center;gap:8px}
+.alert-action{font-size:11px;color:var(--accent);cursor:pointer;font-weight:500}
+
+/* ── Right panel ── */
+.right-panel{display:flex;flex-direction:column;overflow:hidden}
+.panel-tabs{display:flex;border-bottom:0.5px solid var(--border);flex-shrink:0}
+.ptab{flex:1;padding:8px 0;text-align:center;font-size:11px;color:var(--text3);cursor:pointer;transition:all .15s;border-bottom:2px solid transparent}
+.ptab:hover{color:var(--text2)}
+.ptab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.panel-body{flex:1;overflow-y:auto;padding:10px}
+
+/* Drone list */
+.drone-row{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;cursor:pointer;transition:background .1s;border:0.5px solid transparent}
+.drone-row:hover{background:var(--bg2)}
+.drone-row.selected{background:var(--bg3);border-color:var(--border2)}
+.dr-status{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dr-id{font-size:11px;font-weight:500;color:var(--text);width:42px;flex-shrink:0}
+.dr-mission{font-size:10px;color:var(--text3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dr-batt-wrap{width:36px;flex-shrink:0}
+.dr-batt-bar{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.dr-batt-fill{height:100%;border-radius:2px}
+.dr-batt-lbl{font-size:9px;color:var(--text3);text-align:right;margin-top:1px}
+.s-flying{background:var(--accent)}
+.s-swapping{background:var(--amber)}
+.s-charging{background:var(--green)}
+.s-waiting{background:var(--text3)}
+/* Drone detail card */
+.detail-card{background:var(--bg2);border:0.5px solid var(--border2);border-radius:8px;padding:12px;margin-bottom:8px}
+.detail-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.detail-id{font-size:13px;font-weight:600;color:var(--text)}
+.detail-rows{display:flex;flex-direction:column;gap:5px}
+.detail-row{display:flex;justify-content:space-between;font-size:11px}
+.detail-key{color:var(--text3)}
+.detail-val{color:var(--text);font-weight:500;font-variant-numeric:tabular-nums}
+.batt-big{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;margin:8px 0 3px}
+.batt-big-fill{height:100%;border-radius:3px;transition:width .4s}
+.action-row{display:flex;gap:6px;margin-top:10px}
+.action-btn{flex:1;padding:6px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;border:0.5px solid var(--border2);background:var(--bg3);color:var(--text2);transition:all .15s;text-align:center}
+.action-btn:hover{border-color:var(--accent);color:var(--accent)}
+.action-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.action-btn.primary:hover{background:var(--accent-dim)}
+.action-btn.danger{border-color:var(--red);color:var(--red)}
+
+/* Station panel */
+.stn-card{background:var(--bg2);border:0.5px solid var(--border2);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.stn-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.stn-card-name{font-size:12px;font-weight:600;color:var(--text)}
+.stn-card-status{font-size:10px;display:flex;align-items:center;gap:4px}
+.stn-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px}
+.stn-stat{text-align:center;background:var(--bg3);border-radius:5px;padding:5px}
+.stn-stat-v{font-size:14px;font-weight:600;color:var(--text)}
+.stn-stat-l{font-size:9px;color:var(--text3);margin-top:1px}
+.mod-grid-mini{display:flex;flex-direction:column;gap:2px}
+.mod-row-mini{display:flex;align-items:center;gap:3px}
+.mod-lbl-mini{font-size:8px;color:var(--text3);width:14px}
+.sock-mini{width:7px;height:7px;border-radius:1px;flex-shrink:0}
+.sm-c{background:var(--green)} .sm-d{background:var(--amber)} .sm-r{background:var(--red)} .sm-e{background:var(--bg3);border:0.5px solid var(--border)}
+.queue-badge{font-size:10px;color:var(--amber);display:flex;align-items:center;gap:4px;margin-top:6px}
+
+/* Mission panel */
+.mission-card{background:var(--bg2);border:0.5px solid var(--border2);border-radius:8px;padding:10px 12px;margin-bottom:6px;cursor:pointer;transition:border-color .15s}
+.mission-card:hover{border-color:var(--border2)}
+.mc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.mc-id{font-size:10px;color:var(--text3);font-family:var(--mono)}
+.mc-status-chip{font-size:9px;padding:2px 6px;border-radius:999px}
+.cs-flight{background:var(--accent-glow);color:var(--accent)}
+.cs-complete{background:var(--green-bg);color:var(--green)}
+.cs-rerouting{background:var(--amber-bg);color:var(--amber)}
+.mc-drone{font-size:12px;font-weight:500;color:var(--text)}
+.mc-target{font-size:11px;color:var(--text3)}
+.mc-progress{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:8px}
+.mc-prog-fill{height:100%;border-radius:2px;background:var(--accent);transition:width .4s}
+.mc-footer{display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--text3)}
+.new-mission-btn{width:100%;padding:8px;border-radius:6px;background:var(--bg3);border:0.5px dashed var(--border2);color:var(--text3);font-size:11px;cursor:pointer;text-align:center;transition:all .15s;margin-top:4px}
+.new-mission-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── Bottom strip ── */
+.bottom-strip{grid-column:1/-1;background:var(--bg1);border-top:0.5px solid var(--border);display:grid;grid-template-columns:52px 200px 1fr 320px;overflow:hidden}
+.bottom-rail{border-right:0.5px solid var(--border)}
+.bottom-sidebar{border-right:0.5px solid var(--border);padding:10px 10px;display:flex;flex-direction:column;justify-content:center}
+.bs-title{font-size:10px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.bs-metrics{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.bs-metric{background:var(--bg2);border-radius:5px;padding:6px 8px}
+.bs-val{font-size:16px;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
+.bs-lbl{font-size:9px;color:var(--text3)}
+.bottom-main{padding:10px 14px;overflow-x:auto;display:flex;align-items:center;gap:10px}
+.event-item{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:6px;background:var(--bg2);border:0.5px solid var(--border);white-space:nowrap;flex-shrink:0}
+.event-time{font-size:10px;color:var(--text3);font-family:var(--mono)}
+.event-text{font-size:11px;color:var(--text2)}
+.event-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.bottom-right{border-left:0.5px solid var(--border);padding:10px 12px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+.reroute-engine{font-size:10px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px}
+.reroute-row{display:flex;align-items:center;justify-content:space-between;font-size:11px}
+.rr-label{color:var(--text3)}
+.rr-val{color:var(--text);font-weight:500}
+.reroute-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;margin-top:4px}
+.toggle-track{width:28px;height:15px;border-radius:999px;background:var(--green);position:relative;transition:background .2s}
+.toggle-track.off{background:var(--bg3)}
+.toggle-thumb{width:11px;height:11px;border-radius:50%;background:#fff;position:absolute;top:2px;left:15px;transition:left .2s}
+.toggle-track.off .toggle-thumb{left:2px}
+.toggle-label{font-size:11px;color:var(--text2)}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login-screen">
+  <div class="login-card">
+    <div>
+      <div class="login-logo">re<span>swap</span> GCS</div>
+      <div class="login-tagline">Ground Control & Mission Management</div>
+    </div>
+    <div>
+      <div class="login-label">Select account</div>
+      <div class="login-accounts" id="acct-list"></div>
+    </div>
+    <div>
+      <div class="login-label">Password</div>
+      <input class="login-input" type="password" id="pw-input" value="••••••••" placeholder="Password"/>
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign in</button>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <header class="topbar">
+    <div class="topbar-l">
+      <div class="topbar-logo">RS</div>
+      <div class="topbar-site">
+        <div>
+          <div class="site-name" id="site-name">Permian Basin · Alpha Site</div>
+          <div class="site-sub" id="site-sub">Op. since 2026-06-01 · 2 stations active</div>
+        </div>
+      </div>
+    </div>
+    <div class="topbar-r">
+      <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+      <div class="shift-chip">Shift <span id="shift-time">00:00:00</span></div>
+      <div class="user-chip">
+        <div class="user-avatar" id="user-avatar">—</div>
+        <span id="user-name">—</span>
+      </div>
+      <div class="logout-btn" onclick="doLogout()">Sign out</div>
+    </div>
+  </header>
+
+  <div class="icon-rail">
+    <div class="rail-btn active" onclick="setView('map')" title="Map"><i class="ti ti-map"></i></div>
+    <div class="rail-btn" onclick="setView('missions')" title="Missions"><i class="ti ti-route"></i></div>
+    <div class="rail-btn" onclick="setView('batteries')" title="Batteries"><i class="ti ti-battery-charging"></i></div>
+    <div class="rail-sep"></div>
+    <div class="rail-btn" onclick="setView('data')" title="Data & Reports"><i class="ti ti-chart-bar"></i></div>
+    <div class="rail-spacer"></div>
+    <div class="rail-btn" title="Settings"><i class="ti ti-settings"></i></div>
+  </div>
+
+  <div class="sidebar" id="sidebar"></div>
+
+  <div class="main">
+    <!-- Map -->
+    <div class="map-area" id="map-area">
+      <canvas class="map-canvas" id="map-canvas"></canvas>
+      <div class="map-overlay">
+        <div class="map-chip"><i class="ti ti-map-pin" style="font-size:12px;color:var(--amber)"></i>2 stations</div>
+        <div class="map-chip"><i class="ti ti-drone" style="font-size:12px;color:var(--accent)"></i><span id="map-drone-count">8 drones</span></div>
+        <div class="map-chip" id="map-auto-chip" style="color:var(--green)"><i class="ti ti-bolt" style="font-size:12px"></i>Auto-reroute ON</div>
+      </div>
+      <div class="map-controls">
+        <div class="map-btn" title="Zoom in"><i class="ti ti-plus"></i></div>
+        <div class="map-btn" title="Zoom out"><i class="ti ti-minus"></i></div>
+        <div class="map-btn" title="Fit all"><i class="ti ti-maximize"></i></div>
+      </div>
+      <div id="map-pins"></div>
+      <div class="alert-banner hidden" id="alert-banner">
+        <div class="alert-l">
+          <i class="ti ti-alert-triangle" style="font-size:14px"></i>
+          <span id="alert-text">DR-07 battery critical (12%) — rerouting to STN-02</span>
+        </div>
+        <div class="alert-action" onclick="dismissAlert()">Dismiss</div>
+      </div>
+    </div>
+
+    <!-- Right panel -->
+    <div class="right-panel">
+      <div class="panel-tabs">
+        <div class="ptab active" onclick="setTab('fleet')">Fleet</div>
+        <div class="ptab" onclick="setTab('stations')">Stations</div>
+        <div class="ptab" onclick="setTab('missions')">Missions</div>
+      </div>
+      <div class="panel-body" id="panel-body"></div>
+    </div>
+
+    <!-- Bottom strip -->
+    <div class="bottom-strip">
+      <div class="bottom-rail"></div>
+      <div class="bottom-sidebar">
+        <div class="bs-title">Shift summary</div>
+        <div class="bs-metrics">
+          <div class="bs-metric"><div class="bs-val" id="bs-missions">—</div><div class="bs-lbl">Missions</div></div>
+          <div class="bs-metric"><div class="bs-val" id="bs-swaps">—</div><div class="bs-lbl">Swaps</div></div>
+          <div class="bs-metric"><div class="bs-val" id="bs-util">—</div><div class="bs-lbl">Utilization</div></div>
+          <div class="bs-metric"><div class="bs-val" id="bs-rev">—</div><div class="bs-lbl">Revenue</div></div>
+        </div>
+      </div>
+      <div class="bottom-main" id="event-log"></div>
+      <div class="bottom-right">
+        <div class="reroute-engine">Auto-reroute engine</div>
+        <div class="reroute-row"><div class="rr-label">Algorithm</div><div class="rr-val">Nearest available</div></div>
+        <div class="reroute-row"><div class="rr-label">Trigger</div><div class="rr-val">Battery &lt; 20%</div></div>
+        <div class="reroute-row"><div class="rr-label">Reroutes today</div><div class="rr-val" id="reroute-count">3</div></div>
+        <div class="reroute-toggle" onclick="toggleAuto()">
+          <div class="toggle-track" id="auto-toggle"><div class="toggle-thumb"></div></div>
+          <div class="toggle-label">Automatic rerouting</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+const ACCOUNTS = [
+  {id:'pioneer',name:'Pioneer Natural Resources',site:'Permian Basin · Alpha Site',role:'Operator',avatar:'PN'},
+  {id:'chevron',name:'Chevron Operations',site:'Midland Basin · Site 7',role:'Operator',avatar:'CV'},
+  {id:'admin',name:'Reswap Admin',site:'All sites',role:'Super Admin',avatar:'RS'},
+];
+
+const SIM = {
+  missions_reswap:220, missions_baseline:90, multiplier:2.4,
+  utilization_reswap:93.4, total_swaps:220,
+  revenue_per_day:2640, saas_per_day:25,
+  daily_revenue_per_station:1345, days_to_breakeven:3.7,
+};
+
+const DRONES = [
+  {id:'DR-01',status:'flying',  batt:68, mission:'INS-03', eta:8,  x:42, y:28},
+  {id:'DR-02',status:'flying',  batt:82, mission:'DEL-02', eta:14, x:71, y:44},
+  {id:'DR-03',status:'flying',  batt:41, mission:'INS-07', eta:6,  x:55, y:65},
+  {id:'DR-04',status:'swapping',batt:4,  mission:'—',       eta:2,  x:28, y:32},
+  {id:'DR-05',status:'charging',batt:55, mission:'—',       eta:22, x:28, y:32},
+  {id:'DR-06',status:'flying',  batt:77, mission:'INS-01', eta:11, x:22, y:55},
+  {id:'DR-07',status:'flying',  batt:12, mission:'DEL-01', eta:19, x:63, y:78},
+  {id:'DR-08',status:'waiting', batt:8,  mission:'—',       eta:0,  x:68, y:62},
+];
+
+const STATIONS = [
+  {id:'STN-01',name:'North pad',loc:'Wellhead cluster A',x:28,y:32,charged:52,depleted:7,replace:1,queue:1,arm_busy:false,swaps:110,
+   modules:[{g:10,d:2,r:0},{g:11,d:1,r:0},{g:11,d:1,r:0},{g:10,d:2,r:0},{g:10,d:1,r:1}]},
+  {id:'STN-02',name:'South pad',loc:'Inspection zone B',x:68,y:62,charged:19,depleted:41,replace:0,queue:0,arm_busy:true,swaps:110,
+   modules:[{g:3,d:9,r:0},{g:2,d:10,r:0},{g:6,d:6,r:0},{g:4,d:8,r:0},{g:4,d:8,r:0}]},
+];
+
+const WAYPOINTS = [
+  {id:'INS-01',kind:'inspection',x:22,y:55},{id:'INS-02',kind:'inspection',x:78,y:30},
+  {id:'INS-03',kind:'inspection',x:42,y:28},{id:'INS-04',kind:'inspection',x:60,y:20},
+  {id:'INS-05',kind:'inspection',x:18,y:72},{id:'INS-06',kind:'inspection',x:85,y:65},
+  {id:'DEL-01',kind:'delivery',x:63,y:78},{id:'DEL-02',kind:'delivery',x:71,y:44},
+  {id:'DEL-03',kind:'delivery',x:35,y:82},
+];
+
+const MISSIONS_DATA = [
+  {id:'M-091',drone:'DR-01',type:'Inspection',target:'INS-03',status:'in_flight',progress:62,eta:8},
+  {id:'M-090',drone:'DR-02',type:'Delivery',target:'DEL-02',status:'in_flight',progress:45,eta:14},
+  {id:'M-089',drone:'DR-03',type:'Inspection',target:'INS-07',status:'in_flight',progress:78,eta:6},
+  {id:'M-088',drone:'DR-06',type:'Inspection',target:'INS-01',status:'in_flight',progress:30,eta:11},
+  {id:'M-087',drone:'DR-07',type:'Delivery',target:'DEL-01',status:'rerouting',progress:55,eta:19},
+  {id:'M-086',drone:'DR-01',type:'Inspection',target:'INS-05',status:'complete',progress:100,eta:0},
+  {id:'M-085',drone:'DR-02',type:'Delivery',target:'DEL-03',status:'complete',progress:100,eta:0},
+];
+
+const EVENTS = [
+  {time:'14:31',text:'DR-04 swap complete at STN-01 — back in air',color:'var(--green)'},
+  {time:'14:28',text:'DR-07 battery 12% — auto-rerouted to STN-02',color:'var(--amber)'},
+  {time:'14:22',text:'M-089 assigned to DR-03 (INS-07)',color:'var(--accent)'},
+  {time:'14:19',text:'DR-08 queuing at STN-02 — 1 drone ahead',color:'var(--amber)'},
+  {time:'14:11',text:'STN-01 arm swap complete in 74s',color:'var(--green)'},
+  {time:'14:03',text:'M-086 complete — DR-01 INS-05 ✓',color:'var(--green)'},
+  {time:'13:58',text:'DR-05 charging at STN-01 — ETA 22 min',color:'var(--text3)'},
+  {time:'13:44',text:'M-085 complete — DR-02 DEL-03 ✓',color:'var(--green)'},
+];
+
+// ── State ──────────────────────────────────────────────────────────────────────
+let currentAccount = null;
+let selectedDrone  = null;
+let activeTab      = 'fleet';
+let autoReroute    = true;
+let reroutes       = 3;
+let missionCount   = SIM.missions_reswap;
+let swapCount      = SIM.total_swaps;
+
+// ── Login ──────────────────────────────────────────────────────────────────────
+function buildLoginAccounts(){
+  const el = document.getElementById('acct-list');
+  el.innerHTML = ACCOUNTS.map(a => `
+    <div class="acct-pill" onclick="selectAccount('${a.id}')">
+      <div>
+        <div style="font-size:12px;color:var(--text)">${a.name}</div>
+        <div class="acct-role">${a.site} · ${a.role}</div>
+      </div>
+      <i class="ti ti-chevron-right" style="font-size:12px;color:var(--text3)"></i>
+    </div>`).join('');
+}
+
+function selectAccount(id){
+  currentAccount = ACCOUNTS.find(a=>a.id===id);
+  document.querySelectorAll('.acct-pill').forEach(p=>p.style.borderColor='');
+  event.currentTarget.style.borderColor='var(--accent)';
+}
+
+function doLogin(){
+  if(!currentAccount) currentAccount = ACCOUNTS[0];
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='grid';
+  initApp();
+}
+
+function doLogout(){
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  currentAccount = null;
+}
+
+// ── App init ──────────────────────────────────────────────────────────────────
+function initApp(){
+  document.getElementById('user-avatar').textContent = currentAccount.avatar;
+  document.getElementById('user-name').textContent   = currentAccount.name.split(' ')[0];
+  document.getElementById('site-name').textContent   = currentAccount.site;
+  buildSidebar();
+  buildPanelBody();
+  buildEventLog();
+  updateBottomStrip();
+  initMap();
+  tick();
+  setInterval(tick,1000);
+  setInterval(animateDrones,4000);
+  // Show low battery alert after 2s
+  setTimeout(()=>{
+    document.getElementById('alert-banner').classList.remove('hidden');
+  },2000);
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+function buildSidebar(){
+  const flying   = DRONES.filter(d=>d.status==='flying').length;
+  const swapping = DRONES.filter(d=>d.status==='swapping').length;
+  const charging = DRONES.filter(d=>d.status==='charging').length;
+  const waiting  = DRONES.filter(d=>d.status==='waiting').length;
+  const active   = MISSIONS_DATA.filter(m=>m.status==='in_flight').length;
+  const rerouting= MISSIONS_DATA.filter(m=>m.status==='rerouting').length;
+
+  document.getElementById('sidebar').innerHTML = `
+    <div class="sidebar-section">Fleet</div>
+    <div class="sidebar-item active"><div class="sidebar-item-l"><i class="ti ti-drone"></i>All drones</div><div class="badge badge-blue">${DRONES.length}</div></div>
+    <div class="sidebar-item"><div class="sidebar-item-l" style="padding-left:18px">Flying</div><div class="badge badge-blue">${flying}</div></div>
+    <div class="sidebar-item"><div class="sidebar-item-l" style="padding-left:18px">Swapping</div><div class="badge badge-amber">${swapping}</div></div>
+    <div class="sidebar-item"><div class="sidebar-item-l" style="padding-left:18px">Charging</div><div class="badge badge-green">${charging}</div></div>
+    ${waiting?`<div class="sidebar-item"><div class="sidebar-item-l" style="padding-left:18px;color:var(--text3)">Waiting</div><div class="badge" style="background:var(--bg3);color:var(--text3)">${waiting}</div></div>`:''}
+    <div class="sidebar-section">Missions</div>
+    <div class="sidebar-item"><div class="sidebar-item-l"><i class="ti ti-route"></i>Active</div><div class="badge badge-blue">${active}</div></div>
+    ${rerouting?`<div class="sidebar-item"><div class="sidebar-item-l"><i class="ti ti-refresh"></i>Rerouting</div><div class="badge badge-amber">${rerouting}</div></div>`:''}
+    <div class="sidebar-item"><div class="sidebar-item-l"><i class="ti ti-check"></i>Completed</div><div class="badge badge-green">${missionCount}</div></div>
+    <div class="sidebar-section">Stations</div>
+    ${STATIONS.map(s=>`
+    <div class="sidebar-item">
+      <div class="sidebar-item-l"><i class="ti ti-charging-pile"></i>${s.id}</div>
+      <div class="badge ${s.queue>0?'badge-amber':'badge-green'}">${s.arm_busy?'busy':'ready'}</div>
+    </div>`).join('')}
+  `;
+}
+
+// ── Panel tabs ────────────────────────────────────────────────────────────────
+function setTab(tab){
+  activeTab = tab;
+  document.querySelectorAll('.ptab').forEach((t,i)=>{
+    t.classList.toggle('active',['fleet','stations','missions'][i]===tab);
+  });
+  buildPanelBody();
+}
+
+function buildPanelBody(){
+  const el = document.getElementById('panel-body');
+  if(activeTab==='fleet')     el.innerHTML = buildFleetPanel();
+  if(activeTab==='stations')  el.innerHTML = buildStationsPanel();
+  if(activeTab==='missions')  el.innerHTML = buildMissionsPanel();
+}
+
+function buildFleetPanel(){
+  if(selectedDrone){
+    const d = DRONES.find(x=>x.id===selectedDrone);
+    const bc = d.batt>40?'var(--green)':d.batt>15?'var(--amber)':'var(--red)';
+    const nearestStn = STATIONS.reduce((a,b)=>
+      Math.hypot(a.x-d.x,a.y-d.y)<Math.hypot(b.x-d.x,b.y-d.y)?a:b);
+    const dist = Math.round(Math.hypot(nearestStn.x-d.x,nearestStn.y-d.y)*40);
+    return `
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;cursor:pointer" onclick="selectedDrone=null;buildPanelBody()">
+        <i class="ti ti-arrow-left" style="color:var(--text3);font-size:13px"></i>
+        <span style="font-size:11px;color:var(--text3)">All drones</span>
+      </div>
+      <div class="detail-card">
+        <div class="detail-header">
+          <div class="detail-id">${d.id}</div>
+          <div class="badge ${d.status==='flying'?'badge-blue':d.status==='swapping'?'badge-amber':'badge-green'}">${d.status}</div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-bottom:6px">Battery</div>
+        <div class="batt-big"><div class="batt-big-fill" style="width:${d.batt}%;background:${bc}"></div></div>
+        <div style="font-size:11px;color:${bc};font-weight:600;margin-bottom:8px">${d.batt}%</div>
+        <div class="detail-rows">
+          <div class="detail-row"><div class="detail-key">Mission</div><div class="detail-val">${d.mission}</div></div>
+          <div class="detail-row"><div class="detail-key">ETA</div><div class="detail-val">${d.eta>0?d.eta+' min':'—'}</div></div>
+          <div class="detail-row"><div class="detail-key">Nearest station</div><div class="detail-val">${nearestStn.id}</div></div>
+          <div class="detail-row"><div class="detail-key">Distance to stn</div><div class="detail-val">~${dist}m</div></div>
+          <div class="detail-row"><div class="detail-key">Charged packs</div><div class="detail-val">${nearestStn.charged} avail</div></div>
+        </div>
+        <div class="action-row">
+          <div class="action-btn primary" onclick="reroute('${d.id}')">Reroute to station</div>
+          <div class="action-btn danger">RTH</div>
+        </div>
+      </div>`;
+  }
+  return DRONES.map(d=>`
+    <div class="drone-row ${selectedDrone===d.id?'selected':''}" onclick="selectedDrone='${d.id}';buildPanelBody()">
+      <div class="dr-status s-${d.status}"></div>
+      <div class="dr-id">${d.id}</div>
+      <div class="dr-mission">${d.status==='flying'?d.mission:'—'}</div>
+      <div class="dr-batt-wrap">
+        <div class="dr-batt-bar"><div class="dr-batt-fill" style="width:${d.batt}%;background:${d.batt>40?'var(--green)':d.batt>15?'var(--amber)':'var(--red)'}"></div></div>
+        <div class="dr-batt-lbl">${d.batt}%</div>
+      </div>
+    </div>`).join('');
+}
+
+function buildStationsPanel(){
+  return STATIONS.map(s=>{
+    const modHtml = s.modules.map((m,i)=>{
+      let socks='';
+      for(let j=0;j<m.g;j++) socks+=`<div class="sock-mini sm-c"></div>`;
+      for(let j=0;j<m.d;j++) socks+=`<div class="sock-mini sm-d"></div>`;
+      for(let j=0;j<m.r;j++) socks+=`<div class="sock-mini sm-r"></div>`;
+      const empty=12-m.g-m.d-m.r;
+      for(let j=0;j<empty;j++) socks+=`<div class="sock-mini sm-e"></div>`;
+      return `<div class="mod-row-mini"><div class="mod-lbl-mini">M${i+1}</div>${socks}</div>`;
+    }).join('');
+    return `
+    <div class="stn-card">
+      <div class="stn-card-header">
+        <div class="stn-card-name">${s.id} — ${s.name}</div>
+        <div class="stn-card-status">
+          <div style="width:6px;height:6px;border-radius:50%;background:${s.arm_busy?'var(--amber)':'var(--green)'}"></div>
+          <span style="color:${s.arm_busy?'var(--amber)':'var(--green)'}">${s.arm_busy?'Swapping':'Ready'}</span>
+        </div>
+      </div>
+      <div class="stn-stats">
+        <div class="stn-stat"><div class="stn-stat-v" style="color:var(--green)">${s.charged}</div><div class="stn-stat-l">Charged</div></div>
+        <div class="stn-stat"><div class="stn-stat-v" style="color:var(--amber)">${s.depleted}</div><div class="stn-stat-l">Depleted</div></div>
+        <div class="stn-stat"><div class="stn-stat-v">${s.swaps}</div><div class="stn-stat-l">Swaps</div></div>
+      </div>
+      <div style="font-size:9px;color:var(--text3);margin-bottom:4px">Pack health (5×12)</div>
+      <div class="mod-grid-mini">${modHtml}</div>
+      ${s.queue>0?`<div class="queue-badge"><i class="ti ti-clock" style="font-size:11px"></i>${s.queue} drone queuing</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function buildMissionsPanel(){
+  const statusLabel = {in_flight:'In flight',complete:'Complete',rerouting:'Rerouting'};
+  const statusCls   = {in_flight:'cs-flight',complete:'cs-complete',rerouting:'cs-rerouting'};
+  return `
+    ${MISSIONS_DATA.map(m=>`
+    <div class="mission-card">
+      <div class="mc-header">
+        <div class="mc-id">${m.id}</div>
+        <div class="mc-status-chip ${statusCls[m.status]}">${statusLabel[m.status]}</div>
+      </div>
+      <div class="mc-drone">${m.drone}</div>
+      <div class="mc-target">${m.type} · ${m.target}</div>
+      <div class="mc-progress"><div class="mc-prog-fill" style="width:${m.progress}%;background:${m.status==='complete'?'var(--green)':m.status==='rerouting'?'var(--amber)':'var(--accent)'}"></div></div>
+      <div class="mc-footer">
+        <span>${m.progress}%</span>
+        <span>${m.status==='complete'?'Done':m.eta+' min ETA'}</span>
+      </div>
+    </div>`).join('')}
+    <div class="new-mission-btn" onclick="alert('Mission planner — Week 4')">
+      <i class="ti ti-plus" style="font-size:12px"></i> Plan new mission
+    </div>`;
+}
+
+// ── Event log ─────────────────────────────────────────────────────────────────
+function buildEventLog(){
+  document.getElementById('event-log').innerHTML = EVENTS.map(e=>`
+    <div class="event-item">
+      <div class="event-dot" style="background:${e.color}"></div>
+      <div class="event-time">${e.time}</div>
+      <div class="event-text">${e.text}</div>
+    </div>`).join('');
+}
+
+// ── Bottom strip ──────────────────────────────────────────────────────────────
+function updateBottomStrip(){
+  document.getElementById('bs-missions').textContent = missionCount;
+  document.getElementById('bs-swaps').textContent    = swapCount;
+  document.getElementById('bs-util').textContent     = SIM.utilization_reswap+'%';
+  document.getElementById('bs-rev').textContent      = '$'+(swapCount*12+25).toLocaleString();
+  document.getElementById('reroute-count').textContent = reroutes;
+}
+
+// ── Map ───────────────────────────────────────────────────────────────────────
+function initMap(){
+  const canvas = document.getElementById('map-canvas');
+  const area   = document.getElementById('map-area');
+  canvas.width  = area.clientWidth;
+  canvas.height = area.clientHeight;
+  drawMap();
+  renderPins();
+}
+
+function drawMap(){
+  const canvas = document.getElementById('map-canvas');
+  const ctx    = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  // Subtle grid
+  ctx.strokeStyle='#ffffff06'; ctx.lineWidth=1;
+  for(let x=0;x<W;x+=40){ ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke(); }
+  for(let y=0;y<H;y+=40){ ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke(); }
+
+  // Site boundary circle
+  ctx.strokeStyle='#ffffff0a'; ctx.lineWidth=1; ctx.setLineDash([4,6]);
+  ctx.beginPath();ctx.arc(W/2,H/2,Math.min(W,H)*0.42,0,Math.PI*2);ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Reroute line: DR-07 → STN-02
+  const d7 = DRONES.find(d=>d.id==='DR-07');
+  const s2 = STATIONS[1];
+  const x1=d7.x/100*W, y1=d7.y/100*H, x2=s2.x/100*W, y2=s2.y/100*H;
+  ctx.strokeStyle='var(--amber)'; ctx.lineWidth=1.2; ctx.setLineDash([4,4]);
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function pct(v,total){ return v/100*total }
+
+function renderPins(){
+  const area = document.getElementById('map-area');
+  const W=area.clientWidth, H=area.clientHeight;
+  let html='';
+
+  // Waypoints
+  WAYPOINTS.forEach(w=>{
+    const cls = w.kind==='inspection'?'wp-ins':'wp-del';
+    html+=`<div class="waypoint-pin" style="left:${w.x}%;top:${w.y}%">
+      <div class="wp-dot ${cls}" title="${w.id}"></div>
+    </div>`;
+  });
+
+  // Home base
+  html+=`<div class="home-pin" style="left:50%;top:50%">
+    <div class="home-icon">H</div>
+  </div>`;
+
+  // Stations
+  STATIONS.forEach((s,i)=>{
+    const queueHtml = s.queue>0?`<div class="stn-queue">${s.queue}</div>`:'';
+    html+=`<div class="station-pin" style="left:${s.x}%;top:${s.y}%" onclick="setTab('stations');buildPanelBody()">
+      <div class="stn-icon" style="position:relative">${i+1}${queueHtml}</div>
+      <div class="stn-label">${s.id}</div>
+    </div>`;
+  });
+
+  // Drones
+  DRONES.forEach(d=>{
+    const cls = `d-${d.status}`;
+    const initials = d.id.replace('DR-','');
+    html+=`<div class="drone-pin" id="pin-${d.id}" style="left:${d.x}%;top:${d.y}%" onclick="selectedDrone='${d.id}';setTab('fleet');buildPanelBody()">
+      <div class="drone-icon ${cls}">${initials}</div>
+      <div class="drone-label">${d.batt}%</div>
+    </div>`;
+  });
+
+  document.getElementById('map-pins').innerHTML=html;
+}
+
+function animateDrones(){
+  DRONES.forEach(d=>{
+    if(d.status==='flying'){
+      d.x = Math.max(5,Math.min(90,d.x+(Math.random()-0.5)*8));
+      d.y = Math.max(5,Math.min(90,d.y+(Math.random()-0.5)*8));
+      const pin = document.getElementById('pin-'+d.id);
+      if(pin){ pin.style.left=d.x+'%'; pin.style.top=d.y+'%'; }
+    }
+  });
+}
+
+// ── Reroute action ────────────────────────────────────────────────────────────
+function reroute(droneId){
+  const d = DRONES.find(x=>x.id===droneId);
+  const nearest = STATIONS.reduce((a,b)=>
+    Math.hypot(a.x-d.x,a.y-d.y)<Math.hypot(b.x-d.x,b.y-d.y)?a:b);
+  alert(`Auto-rerouting ${droneId} to ${nearest.id}\nEstimated transit: ${Math.round(Math.hypot(nearest.x-d.x,nearest.y-d.y)*2)} min\nCharged packs available: ${nearest.charged}`);
+  reroutes++;
+  document.getElementById('reroute-count').textContent=reroutes;
+}
+
+function dismissAlert(){ document.getElementById('alert-banner').classList.add('hidden'); }
+
+function toggleAuto(){
+  autoReroute=!autoReroute;
+  const t=document.getElementById('auto-toggle');
+  t.classList.toggle('off',!autoReroute);
+  document.getElementById('map-auto-chip').style.color=autoReroute?'var(--green)':'var(--text3)';
+  document.getElementById('map-auto-chip').querySelector('span') &&
+    (document.getElementById('map-auto-chip').lastChild.textContent=autoReroute?' Auto-reroute ON':' Auto-reroute OFF');
+}
+
+function setView(v){ console.log('View:',v); }
+
+// ── Tick ──────────────────────────────────────────────────────────────────────
+const SHIFT_START=(()=>{const d=new Date();d.setHours(10,0,0,0);return d;})();
+function tick(){
+  const el=Date.now()-SHIFT_START;
+  const h=String(Math.floor(el/3600000)).padStart(2,'0');
+  const m=String(Math.floor((el%3600000)/60000)).padStart(2,'0');
+  const s=String(Math.floor((el%60000)/1000)).padStart(2,'0');
+  document.getElementById('shift-time').textContent=`${h}:${m}:${s}`;
+  if(Math.random()<0.015){ missionCount++; swapCount++; updateBottomStrip(); }
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+buildLoginAccounts();
+</script>
+</body>
+</html>

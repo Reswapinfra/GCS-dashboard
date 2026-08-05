@@ -1,0 +1,376 @@
+{
+  "generated_at": "2026-06-28",
+  "params": {
+    "fleet_size": 10,
+    "num_stations": 2,
+    "swap_time_s": 78,
+    "sockets_per_station": 60,
+    "modules_per_station": 5,
+    "sockets_per_module": 12,
+    "swap_fee": 12.0,
+    "operating_hours": 10
+  },
+  "summary": {
+    "missions_reswap": 220,
+    "missions_baseline": 90,
+    "multiplier": 2.4,
+    "utilization_reswap": 93.4,
+    "utilization_baseline": 38.9,
+    "total_swaps": 220,
+    "revenue_per_day": 2640.0,
+    "saas_per_day": 25.0,
+    "daily_revenue_per_station": 1345.0,
+    "days_to_breakeven": 3.7,
+    "annual_revenue_per_station": 490925.0,
+    "pack_cost_per_swap": 0.3125,
+    "pack_cost_pct": 2.6
+  },
+  "stations": [
+    {
+      "id": "STN-01",
+      "name": "North pad \u00b7 Wellhead cluster A",
+      "swaps": 110,
+      "arm_status": "ready",
+      "pack_age_days": 90,
+      "temp_c": 32.0,
+      "modules": [
+        {
+          "module": 1,
+          "good": 10,
+          "degraded": 2,
+          "replace": 0,
+          "avg_cap": 91.3
+        },
+        {
+          "module": 2,
+          "good": 11,
+          "degraded": 1,
+          "replace": 0,
+          "avg_cap": 94.5
+        },
+        {
+          "module": 3,
+          "good": 11,
+          "degraded": 1,
+          "replace": 0,
+          "avg_cap": 94.6
+        },
+        {
+          "module": 4,
+          "good": 10,
+          "degraded": 2,
+          "replace": 0,
+          "avg_cap": 93.5
+        },
+        {
+          "module": 5,
+          "good": 10,
+          "degraded": 1,
+          "replace": 1,
+          "avg_cap": 93.3
+        }
+      ]
+    },
+    {
+      "id": "STN-02",
+      "name": "South pad \u00b7 Inspection zone B",
+      "swaps": 110,
+      "arm_status": "swapping",
+      "pack_age_days": 60,
+      "temp_c": 30.0,
+      "modules": [
+        {
+          "module": 1,
+          "good": 3,
+          "degraded": 9,
+          "replace": 0,
+          "avg_cap": 86.7
+        },
+        {
+          "module": 2,
+          "good": 2,
+          "degraded": 10,
+          "replace": 0,
+          "avg_cap": 85.7
+        },
+        {
+          "module": 3,
+          "good": 6,
+          "degraded": 6,
+          "replace": 0,
+          "avg_cap": 91.4
+        },
+        {
+          "module": 4,
+          "good": 4,
+          "degraded": 8,
+          "replace": 0,
+          "avg_cap": 88.6
+        },
+        {
+          "module": 5,
+          "good": 4,
+          "degraded": 8,
+          "replace": 0,
+          "avg_cap": 88.6
+        }
+      ]
+    }
+  ],
+  "timeline": [
+    {
+      "time_min": 0.0,
+      "flying": 0,
+      "swapping": 0,
+      "charging": 10,
+      "waiting": 0,
+      "missions_total": 0
+    },
+    {
+      "time_min": 30.0,
+      "flying": 7,
+      "swapping": 2,
+      "charging": 0,
+      "waiting": 1,
+      "missions_total": 6
+    },
+    {
+      "time_min": 60.0,
+      "flying": 10,
+      "swapping": 0,
+      "charging": 0,
+      "waiting": 0,
+      "missions_total": 16
+    },
+    {
+      "time_min": 90.0,
+      "flying": 10,
+      "swapping": 0,
+      "charging": 0,
+      "waiting": 0,
+      "missions_total": 28
+    },
+    {
+      "time_min": 120.0,
+      "flying": 9,
+      "swapping": 1,
+      "charging": 0,
+      "waiting": 0,
+      "missions_total": 40
+    },
+    {
+      "time_min": 150.0,
+      "flying": 10,
+      "swapping": 0,
+      "charging": 0,
+      "waiting": 0,
+      "missions_total": 50
+    },
+    {
+      "time_min": 180.0,
+      "flying": 10,
+      "swapping": 0,
+      "charging": 0,
+      "waiting": 0,
+      "missions_total": 60
+    },
+    {
+      "time_min": 210.0,
+      "flying": 10,
+      "swapping": 0,
+      "charging": 0,
+      "waiting": 0,
+      "missions_total": 70
+    },
+    {
+      "time_min": 240.0,
+      "flying": 9,
+      "swapping": 1,
+      "charging": 0,
+      "waiting": 0,
+      "missions_total": 82
+    },
+    {
+      "time_min": 270.0,
+      "flying": 9,
+      "swapping": 1,
+      "charging": 0,
+      "waiting": 0,
+      "missions_total": 96
+    },
+    {
+      "time_min": 300.0,
+      "flying": 8,
+      "swapping": 2,
+      "charging": 0,
+      "waiting": 0,
+      "missions_total": 108
+    },
+    {
+      "time_min": 330.0,
+      "flying": 10,
+      "swapping": 0,
+      "charging": 0,
+      "waiting": 0,
+      "missions_total": 118
+    },
+    {
+      "time_min": 360.0,
+      "flying": 10,
+      "swapping": 0,
+      "charging": 0,
+      "waiting": 0,
+      "missions_total": 130
+    },
+    {
+      "time_min": 390.0,
+      "flying": 10,
+      "swapping": 0,
+      "charging": 0,
+      "waiting": 0,
+      "missions_total": 140
+    },
+    {
+      "time_min": 420.0,
+      "flying": 10,
+      "swapping": 0,
+      "charging": 0,
+      "waiting": 0,
+      "missions_total": 150
+    },
+    {
+      "time_min": 450.0,
+      "flying": 9,
+      "swapping": 1,
+      "charging": 0,
+      "waiting": 0,
+      "missions_total": 161
+    },
+    {
+      "time_min": 480.0,
+      "flying": 8,
+      "swapping": 2,
+      "charging": 0,
+      "waiting": 0,
+      "missions_total": 174
+    },
+    {
+      "time_min": 510.0,
+      "flying": 10,
+      "swapping": 0,
+      "charging": 0,
+      "waiting": 0,
+      "missions_total": 186
+    },
+    {
+      "time_min": 540.0,
+      "flying": 10,
+      "swapping": 0,
+      "charging": 0,
+      "waiting": 0,
+      "missions_total": 198
+    },
+    {
+      "time_min": 570.0,
+      "flying": 8,
+      "swapping": 2,
+      "charging": 0,
+      "waiting": 0,
+      "missions_total": 210
+    },
+    {
+      "time_min": 600.0,
+      "flying": 10,
+      "swapping": 0,
+      "charging": 0,
+      "waiting": 0,
+      "missions_total": 220
+    }
+  ],
+  "timeline_baseline": [
+    {
+      "time_min": 0.0,
+      "flying": 0
+    },
+    {
+      "time_min": 30.0,
+      "flying": 4
+    },
+    {
+      "time_min": 60.0,
+      "flying": 0
+    },
+    {
+      "time_min": 90.0,
+      "flying": 10
+    },
+    {
+      "time_min": 120.0,
+      "flying": 0
+    },
+    {
+      "time_min": 150.0,
+      "flying": 10
+    },
+    {
+      "time_min": 180.0,
+      "flying": 0
+    },
+    {
+      "time_min": 210.0,
+      "flying": 10
+    },
+    {
+      "time_min": 240.0,
+      "flying": 0
+    },
+    {
+      "time_min": 270.0,
+      "flying": 8
+    },
+    {
+      "time_min": 300.0,
+      "flying": 0
+    },
+    {
+      "time_min": 330.0,
+      "flying": 6
+    },
+    {
+      "time_min": 360.0,
+      "flying": 2
+    },
+    {
+      "time_min": 390.0,
+      "flying": 0
+    },
+    {
+      "time_min": 420.0,
+      "flying": 4
+    },
+    {
+      "time_min": 450.0,
+      "flying": 0
+    },
+    {
+      "time_min": 480.0,
+      "flying": 10
+    },
+    {
+      "time_min": 510.0,
+      "flying": 0
+    },
+    {
+      "time_min": 540.0,
+      "flying": 10
+    },
+    {
+      "time_min": 570.0,
+      "flying": 0
+    },
+    {
+      "time_min": 600.0,
+      "flying": 10
+    }
+  ]
+}

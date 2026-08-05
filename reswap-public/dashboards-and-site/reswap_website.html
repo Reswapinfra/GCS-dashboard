@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Reswap — Battery-swap infrastructure for industrial drones</title>
+<meta name="description" content="Reswap builds automated battery-swap stations that return industrial drones to the air in under 90 seconds. Ground control, mission control, and battery intelligence for oil & gas and construction sites."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0c0e0d;
+  --bg1:#111412;
+  --bg2:#161a17;
+  --line:rgba(233,235,231,0.08);
+  --line2:rgba(233,235,231,0.14);
+  --ink:#e9ebe7;
+  --muted:#9aa39c;
+  --dim:#5f6862;
+  --sage:#93a795;
+  --sage-deep:#5c6e5f;
+  --sage-bg:rgba(147,167,149,0.08);
+  --sage-line:rgba(147,167,149,0.25);
+  --display:'Space Grotesk',sans-serif;
+  --body:'Inter',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+  --max:1120px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--sage-deep);color:var(--ink)}
+
+/* ── Nav ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(12,14,13,0.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav-inner{max-width:var(--max);margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:var(--display);font-size:19px;font-weight:600;letter-spacing:-0.02em;cursor:pointer}
+.logo em{font-style:normal;color:var(--sage)}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{font-size:14px;color:var(--muted);transition:color .15s}
+.nav-links a:hover{color:var(--ink)}
+.nav-cta{font-size:14px;color:var(--ink)!important;border:1px solid var(--sage-line);border-radius:6px;padding:7px 16px;transition:all .15s}
+.nav-cta:hover{background:var(--sage-bg);border-color:var(--sage)}
+@media(max-width:720px){.nav-links a:not(.nav-cta){display:none}}
+
+/* ── Page routing ── */
+.page{display:none}
+.page.active{display:block}
+
+/* ── Hero ── */
+.hero{padding:160px 24px 80px;max-width:var(--max);margin:0 auto}
+.eyebrow{font-family:var(--mono);font-size:12px;color:var(--sage);letter-spacing:.12em;text-transform:uppercase;margin-bottom:20px}
+h1{font-family:var(--display);font-size:clamp(36px,5.5vw,60px);font-weight:600;line-height:1.08;letter-spacing:-0.03em;max-width:820px}
+h1 .sage{color:var(--sage)}
+.hero-sub{font-size:18px;color:var(--muted);max-width:600px;margin-top:24px;line-height:1.65}
+.hero-actions{display:flex;gap:14px;margin-top:36px;flex-wrap:wrap}
+.btn{font-size:15px;font-weight:500;border-radius:6px;padding:12px 24px;cursor:pointer;transition:all .15s;display:inline-block;border:1px solid transparent}
+.btn-primary{background:var(--sage);color:#0c0e0d;border-color:var(--sage)}
+.btn-primary:hover{background:#a5b8a7}
+.btn-ghost{border-color:var(--line2);color:var(--ink)}
+.btn-ghost:hover{border-color:var(--sage-line);background:var(--sage-bg)}
+
+/* ── Cycle animation (signature) ── */
+.cycle-demo{max-width:var(--max);margin:56px auto 0;padding:0 24px}
+.cycle-card{background:var(--bg1);border:1px solid var(--line);border-radius:12px;padding:36px 40px;overflow:hidden}
+.cycle-title{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:28px}
+.cycle-row{margin-bottom:30px}
+.cycle-row:last-child{margin-bottom:0}
+.cycle-label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.cycle-name{font-size:14px;font-weight:500}
+.cycle-stat{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.cycle-stat b{color:var(--sage);font-weight:500}
+.cycle-track{height:34px;background:var(--bg2);border-radius:6px;position:relative;overflow:hidden;border:1px solid var(--line)}
+.cycle-seg{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;overflow:hidden;white-space:nowrap}
+.seg-fly{background:rgba(147,167,149,0.22);color:var(--sage)}
+.seg-charge{background:rgba(233,235,231,0.05);color:var(--dim)}
+.seg-swap{background:var(--sage);color:#0c0e0d;font-weight:500}
+.cycle-drone{position:absolute;top:50%;transform:translate(-50%,-50%);width:8px;height:8px;border-radius:50%;background:var(--ink);box-shadow:0 0 12px rgba(147,167,149,0.8);transition:none}
+.cycle-note{font-size:13px;color:var(--dim);margin-top:22px;font-family:var(--mono)}
+
+/* ── Sections ── */
+section{padding:96px 24px}
+.section-inner{max-width:var(--max);margin:0 auto}
+.section-head{max-width:640px;margin-bottom:56px}
+h2{font-family:var(--display);font-size:clamp(28px,3.5vw,38px);font-weight:600;letter-spacing:-0.02em;line-height:1.15;margin-bottom:16px}
+.section-sub{font-size:17px;color:var(--muted);line-height:1.65}
+
+/* Problem strip */
+.problem{background:var(--bg1);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.problem-cell{background:var(--bg1);padding:32px 28px}
+.problem-num{font-family:var(--display);font-size:40px;font-weight:600;color:var(--sage);letter-spacing:-0.02em;line-height:1}
+.problem-cap{font-size:14px;color:var(--muted);margin-top:12px;line-height:1.55}
+@media(max-width:820px){.problem-grid{grid-template-columns:1fr}}
+
+/* Product sections */
+.product-block{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;padding:64px 0;border-bottom:1px solid var(--line)}
+.product-block:last-child{border-bottom:none}
+.product-block.reverse .product-visual{order:2}
+@media(max-width:880px){.product-block{grid-template-columns:1fr;gap:36px}.product-block.reverse .product-visual{order:0}}
+.product-tag{font-family:var(--mono);font-size:12px;color:var(--sage);letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+h3{font-family:var(--display);font-size:26px;font-weight:600;letter-spacing:-0.02em;margin-bottom:14px}
+.product-desc{font-size:16px;color:var(--muted);line-height:1.7;margin-bottom:22px}
+.spec-list{list-style:none}
+.spec-list li{display:flex;gap:12px;padding:9px 0;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
+.spec-list li:first-child{border-top:none}
+.spec-key{font-family:var(--mono);font-size:12px;color:var(--dim);min-width:130px;padding-top:2px}
+.spec-val{color:var(--ink)}
+.product-visual{background:var(--bg1);border:1px solid var(--line);border-radius:12px;padding:32px;min-height:300px;display:flex;align-items:center;justify-content:center}
+
+/* Station diagram */
+.station-svg{width:100%;max-width:280px}
+/* GCS mock */
+.gcs-mock{width:100%;font-family:var(--mono);font-size:11px}
+.gcs-mock-bar{display:flex;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid var(--line);color:var(--dim);margin-bottom:14px}
+.gcs-mock-bar b{color:var(--sage);font-weight:500}
+.gcs-rows{display:flex;flex-direction:column;gap:8px}
+.gcs-row{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid var(--line);border-radius:6px;padding:9px 12px}
+.gcs-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.gd-fly{background:var(--sage)}
+.gd-swap{background:#c9a86a}
+.gd-chg{background:var(--dim)}
+.gcs-row .grow{flex:1;color:var(--muted)}
+.gcs-batt{color:var(--dim)}
+/* Mission feed */
+.feed{width:100%;font-family:var(--mono);font-size:11.5px;display:flex;flex-direction:column;gap:10px}
+.feed-line{display:flex;gap:12px;color:var(--muted);opacity:0;animation:feedin .5s forwards}
+.feed-line:nth-child(1){animation-delay:.1s}
+.feed-line:nth-child(2){animation-delay:.7s}
+.feed-line:nth-child(3){animation-delay:1.3s}
+.feed-line:nth-child(4){animation-delay:1.9s}
+.feed-line:nth-child(5){animation-delay:2.5s}
+@keyframes feedin{to{opacity:1}}
+.feed-time{color:var(--dim);flex-shrink:0}
+.feed-line b{color:var(--sage);font-weight:500}
+
+/* Data section */
+.data-band{background:var(--bg1);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.data-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:12px}
+.data-cell{background:var(--bg1);padding:30px 26px}
+.data-val{font-family:var(--display);font-size:34px;font-weight:600;letter-spacing:-0.02em;line-height:1}
+.data-val small{font-size:18px;color:var(--muted);font-weight:400}
+.data-key{font-family:var(--mono);font-size:11.5px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin-top:10px}
+@media(max-width:880px){.data-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.data-grid{grid-template-columns:1fr}}
+.data-foot{font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:18px}
+
+/* CTA */
+.cta-band{text-align:center;padding:120px 24px}
+.cta-band h2{margin-bottom:14px}
+.cta-band .section-sub{margin:0 auto 32px;max-width:520px}
+
+/* Footer */
+footer{border-top:1px solid var(--line);padding:48px 24px}
+.footer-inner{max-width:var(--max);margin:0 auto;display:flex;justify-content:space-between;align-items:flex-start;gap:32px;flex-wrap:wrap}
+.footer-brand{font-family:var(--display);font-size:17px;font-weight:600}
+.footer-brand em{font-style:normal;color:var(--sage)}
+.footer-tag{font-size:13px;color:var(--dim);margin-top:6px;max-width:280px}
+.footer-links{display:flex;gap:40px;flex-wrap:wrap}
+.footer-col{display:flex;flex-direction:column;gap:10px}
+.footer-col-title{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.footer-col a{font-size:13.5px;color:var(--muted);transition:color .15s}
+.footer-col a:hover{color:var(--ink)}
+.footer-bottom{max-width:var(--max);margin:40px auto 0;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-size:12.5px;color:var(--dim);flex-wrap:wrap;gap:12px}
+
+/* ── Contact page ── */
+.subpage{padding:150px 24px 100px;max-width:760px;margin:0 auto}
+.subpage h1{font-size:clamp(30px,4vw,44px)}
+.subpage-sub{font-size:16px;color:var(--muted);margin-top:16px;max-width:560px;line-height:1.65}
+.contact-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:48px;margin-top:56px}
+@media(max-width:760px){.contact-grid{grid-template-columns:1fr}}
+.form-group{margin-bottom:20px}
+.form-label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:7px}
+.form-input,.form-textarea,.form-select{width:100%;background:var(--bg1);border:1px solid var(--line2);border-radius:6px;padding:11px 14px;color:var(--ink);font-family:var(--body);font-size:14.5px;outline:none;transition:border-color .15s}
+.form-input:focus,.form-textarea:focus,.form-select:focus{border-color:var(--sage)}
+.form-textarea{min-height:130px;resize:vertical}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239aa39c' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.form-success{display:none;background:var(--sage-bg);border:1px solid var(--sage-line);border-radius:8px;padding:16px 20px;font-size:14.5px;color:var(--sage);margin-top:18px}
+.contact-info-card{background:var(--bg1);border:1px solid var(--line);border-radius:12px;padding:28px;height:fit-content}
+.info-row{padding:14px 0;border-bottom:1px solid var(--line)}
+.info-row:last-child{border-bottom:none}
+.info-label{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+.info-val{font-size:14.5px;color:var(--ink)}
+.info-val a{color:var(--sage)}
+
+/* ── Privacy page ── */
+.legal{padding:150px 24px 100px;max-width:720px;margin:0 auto}
+.legal h1{font-size:clamp(28px,4vw,40px);margin-bottom:8px}
+.legal-updated{font-family:var(--mono);font-size:12.5px;color:var(--dim);margin-bottom:48px}
+.legal h2{font-size:20px;margin:40px 0 12px}
+.legal p{font-size:15px;color:var(--muted);line-height:1.75;margin-bottom:14px}
+.legal ul{margin:0 0 14px 20px}
+.legal li{font-size:15px;color:var(--muted);line-height:1.75;margin-bottom:6px}
+.legal a{color:var(--sage)}
+
+/* Scroll reveal */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
+.reveal.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="logo" onclick="go('home')">re<em>swap</em></div>
+    <div class="nav-links">
+      <a href="#stations" onclick="goSection(event,'stations')">Stations</a>
+      <a href="#ground-control" onclick="goSection(event,'ground-control')">Ground Control</a>
+      <a href="#mission-control" onclick="goSection(event,'mission-control')">Mission Control</a>
+      <a href="#data" onclick="goSection(event,'data')">Data</a>
+      <a class="nav-cta" onclick="go('contact')">Contact us</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════ HOME ═══════════════ -->
+<div class="page active" id="page-home">
+
+  <header class="hero">
+    <div class="eyebrow">Battery-swap infrastructure for industrial drones</div>
+    <h1>Your drones spend more time charging than flying. <span class="sage">We fixed that.</span></h1>
+    <p class="hero-sub">Reswap builds automated battery-swap stations that return an industrial drone to the air in under 90 seconds — turning 60% fleet downtime into continuous operation on oil &amp; gas and construction sites.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" onclick="go('contact')">Request a deployment</a>
+      <a class="btn btn-ghost" href="#stations" onclick="goSection(event,'stations')">See how it works</a>
+    </div>
+  </header>
+
+  <div class="cycle-demo">
+    <div class="cycle-card">
+      <div class="cycle-title">One operating hour · same drone, two worlds</div>
+      <div class="cycle-row">
+        <div class="cycle-label">
+          <div class="cycle-name">Without Reswap</div>
+          <div class="cycle-stat">25 min flight · 40 min recharge — <b id="stat-base">0</b> missions</div>
+        </div>
+        <div class="cycle-track" id="track-base"></div>
+      </div>
+      <div class="cycle-row">
+        <div class="cycle-label">
+          <div class="cycle-name">With Reswap</div>
+          <div class="cycle-stat">25 min flight · 78 s swap — <b id="stat-swap">0</b> missions</div>
+        </div>
+        <div class="cycle-track" id="track-swap"></div>
+      </div>
+      <div class="cycle-note">Simulated in real time · 1 s ≈ 1 min of operation</div>
+    </div>
+  </div>
+
+  <!-- Problem -->
+  <section class="problem" style="margin-top:96px">
+    <div class="section-inner">
+      <div class="section-head reveal">
+        <div class="eyebrow">The problem</div>
+        <h2>Downtime is the silent killer of drone economics.</h2>
+        <p class="section-sub">Every industrial drone fleet hits the same wall: roughly 25 minutes of flight followed by 40 minutes on a charger. On a site where an unplanned failure costs tens of thousands of dollars per hour, a grounded drone is a stalled inspection or a part that never arrives.</p>
+      </div>
+      <div class="problem-grid reveal">
+        <div class="problem-cell">
+          <div class="problem-num">60%</div>
+          <div class="problem-cap">Typical fleet downtime with conventional charging — the majority of every operating shift spent on the ground.</div>
+        </div>
+        <div class="problem-cell">
+          <div class="problem-num">$10k+</div>
+          <div class="problem-cap">Hourly cost of unplanned downtime on an oil &amp; gas site when a critical inspection or parts delivery stalls.</div>
+        </div>
+        <div class="problem-cell">
+          <div class="problem-num">2–3×</div>
+          <div class="problem-cap">Fleet oversizing operators accept today: buying redundant aircraft to paper over the charging gap.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Product: Stations -->
+  <section id="stations">
+    <div class="section-inner">
+      <div class="section-head reveal">
+        <div class="eyebrow">The platform</div>
+        <h2>Three layers. One closed loop.</h2>
+        <p class="section-sub">Swap stations on the ground, ground control in the loop, and mission control on top — each layer feeds the next, and every swap makes the system smarter.</p>
+      </div>
+
+      <div class="product-block reveal">
+        <div>
+          <div class="product-tag">01 · Reswap Stations</div>
+          <h3>A 90-second pit stop, fully automated.</h3>
+          <p class="product-desc">A drone docks from below through the station's bottom aperture. An internal robotic arm pulls the depleted pack, deposits it into a charging socket, and inserts a fully charged one — modeled worst case, 78 seconds. The drone never powers down and the operator never touches it.</p>
+          <ul class="spec-list">
+            <li><span class="spec-key">SWAP TIME</span><span class="spec-val">78 s modeled worst case · 90 s ceiling</span></li>
+            <li><span class="spec-key">CAPACITY</span><span class="spec-val">60 battery packs — 5 modules × 12 sockets</span></li>
+            <li><span class="spec-key">FOOTPRINT</span><span class="spec-val">640 mm diameter · 1,350 mm tall</span></li>
+            <li><span class="spec-key">PACK FORMAT</span><span class="spec-val">Standard Reswap pack — multi-drone compatible</span></li>
+            <li><span class="spec-key">SITING</span><span class="spec-val">Solar + grid hybrid · private airspace, Part 107 today</span></li>
+          </ul>
+        </div>
+        <div class="product-visual">
+          <svg class="station-svg" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Reswap station diagram: five stacked socket modules with a central arm column and bottom docking aperture">
+            <!-- Station outline -->
+            <rect x="40" y="20" width="120" height="240" rx="14" stroke="#5c6e5f" stroke-width="1.5"/>
+            <!-- Modules -->
+            <g stroke="#93a795" stroke-opacity="0.35" stroke-width="1">
+              <line x1="40" y1="66" x2="160" y2="66"/>
+              <line x1="40" y1="112" x2="160" y2="112"/>
+              <line x1="40" y1="158" x2="160" y2="158"/>
+              <line x1="40" y1="204" x2="160" y2="204"/>
+            </g>
+            <!-- Sockets (dots per module) -->
+            <g fill="#93a795">
+              <circle cx="58" cy="43" r="3" opacity=".9"/><circle cx="76" cy="43" r="3" opacity=".6"/><circle cx="124" cy="43" r="3" opacity=".9"/><circle cx="142" cy="43" r="3" opacity=".7"/>
+              <circle cx="58" cy="89" r="3" opacity=".7"/><circle cx="76" cy="89" r="3" opacity=".9"/><circle cx="124" cy="89" r="3" opacity=".5"/><circle cx="142" cy="89" r="3" opacity=".9"/>
+              <circle cx="58" cy="135" r="3" opacity=".9"/><circle cx="76" cy="135" r="3" opacity=".8"/><circle cx="124" cy="135" r="3" opacity=".9"/><circle cx="142" cy="135" r="3" opacity=".6"/>
+              <circle cx="58" cy="181" r="3" opacity=".6"/><circle cx="76" cy="181" r="3" opacity=".9"/><circle cx="124" cy="181" r="3" opacity=".8"/><circle cx="142" cy="181" r="3" opacity=".9"/>
+              <circle cx="58" cy="227" r="3" opacity=".9"/><circle cx="76" cy="227" r="3" opacity=".7"/><circle cx="124" cy="227" r="3" opacity=".9"/><circle cx="142" cy="227" r="3" opacity=".8"/>
+            </g>
+            <!-- Central column -->
+            <rect x="94" y="30" width="12" height="220" rx="4" fill="#93a795" fill-opacity="0.15" stroke="#93a795" stroke-opacity="0.5" stroke-width="1"/>
+            <!-- Carriage -->
+            <rect x="88" y="120" width="24" height="18" rx="3" fill="#93a795"/>
+            <!-- Bottom aperture -->
+            <path d="M80 260 L120 260 L110 278 L90 278 Z" stroke="#93a795" stroke-width="1.5" fill="none"/>
+            <!-- Drone below -->
+            <g stroke="#e9ebe7" stroke-width="1.5" opacity="0.85">
+              <line x1="84" y1="290" x2="116" y2="290"/>
+              <circle cx="80" cy="290" r="5" fill="none"/>
+              <circle cx="120" cy="290" r="5" fill="none"/>
+            </g>
+            <text x="168" y="132" font-family="IBM Plex Mono" font-size="8" fill="#5f6862" transform="rotate(90 168 132)">5 MODULES × 12</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Product: Ground control -->
+      <div class="product-block reverse reveal" id="ground-control">
+        <div>
+          <div class="product-tag">02 · Ground Control</div>
+          <h3>The fleet routes itself around energy.</h3>
+          <p class="product-desc">Ground Control watches every drone's battery in real time. When a pack runs low, the system calculates distance, station queue depth, and charged-pack availability across the network — then redirects the aircraft to the best station automatically. Operators keep full manual override.</p>
+          <ul class="spec-list">
+            <li><span class="spec-key">AUTO-REROUTE</span><span class="spec-val">Triggered below 20% charge · nearest-available algorithm</span></li>
+            <li><span class="spec-key">SCORING</span><span class="spec-val">Distance + station queue + pack availability</span></li>
+            <li><span class="spec-key">FLEET VIEW</span><span class="spec-val">Live position, state, and battery for every aircraft</span></li>
+            <li><span class="spec-key">ISOLATION</span><span class="spec-val">Dedicated drones and stations per customer account</span></li>
+          </ul>
+        </div>
+        <div class="product-visual">
+          <div class="gcs-mock" role="img" aria-label="Ground control interface showing live drone fleet status">
+            <div class="gcs-mock-bar"><span>GROUND CONTROL</span><span><b>●</b> LIVE</span></div>
+            <div class="gcs-rows">
+              <div class="gcs-row"><div class="gcs-dot gd-fly"></div><span>DR-01</span><span class="grow">INS-03 · wellhead A4</span><span class="gcs-batt">68%</span></div>
+              <div class="gcs-row"><div class="gcs-dot gd-fly"></div><span>DR-02</span><span class="grow">DEL-02 · rig 7</span><span class="gcs-batt">82%</span></div>
+              <div class="gcs-row" style="border-color:var(--sage-line)"><div class="gcs-dot gd-swap"></div><span>DR-07</span><span class="grow" style="color:var(--sage)">rerouting → STN-02</span><span class="gcs-batt" style="color:#c9a86a">12%</span></div>
+              <div class="gcs-row"><div class="gcs-dot gd-chg"></div><span>DR-04</span><span class="grow">swapping · STN-01</span><span class="gcs-batt">4%</span></div>
+              <div class="gcs-row"><div class="gcs-dot gd-fly"></div><span>DR-06</span><span class="grow">INS-01 · pipeline seg 3</span><span class="gcs-batt">77%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product: Mission control -->
+      <div class="product-block reveal" id="mission-control">
+        <div>
+          <div class="product-tag">03 · Mission Control</div>
+          <h3>Plan, monitor, and audit every flight.</h3>
+          <p class="product-desc">Mission Control is where operators run the day: create inspection and delivery missions, assign aircraft, watch progress live, and review everything after the fact. Every swap logs cycle count, temperature, and pack health — building the industry's deepest battery-performance dataset with every operating hour.</p>
+          <ul class="spec-list">
+            <li><span class="spec-key">MISSIONS</span><span class="spec-val">Inspection · delivery · survey, with live progress and ETA</span></li>
+            <li><span class="spec-key">SWAP LOG</span><span class="spec-val">Timestamp, drone, pack ID, cycle count, temperature</span></li>
+            <li><span class="spec-key">PACK HEALTH</span><span class="spec-val">Per-socket capacity tracking and replacement forecasting</span></li>
+            <li><span class="spec-key">REVIEW</span><span class="spec-val">Full mission history, revenue, and utilization reporting</span></li>
+          </ul>
+        </div>
+        <div class="product-visual">
+          <div class="feed" role="img" aria-label="Mission control event feed">
+            <div class="feed-line"><span class="feed-time">14:31</span><span><b>M-091</b> assigned — DR-01 → wellhead A4 inspection</span></div>
+            <div class="feed-line"><span class="feed-time">14:28</span><span><b>DR-07</b> 12% — auto-rerouted to STN-02</span></div>
+            <div class="feed-line"><span class="feed-time">14:22</span><span><b>STN-01</b> swap complete in 74 s — pack M3-S07, cycle 212</span></div>
+            <div class="feed-line"><span class="feed-time">14:19</span><span><b>M-089</b> complete — pipeline seg 3 footage uploaded</span></div>
+            <div class="feed-line"><span class="feed-time">14:11</span><span><b>Pack M5-S12</b> flagged — 79% capacity, replacement scheduled</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Data -->
+  <section class="data-band" id="data">
+    <div class="section-inner">
+      <div class="section-head reveal">
+        <div class="eyebrow">Simulated performance</div>
+        <h2>The numbers behind the claim.</h2>
+        <p class="section-sub">Results from our discrete-event fleet simulation: ten drones, two stations, one ten-hour industrial shift. Every figure below comes from the same model that drives our operator dashboard.</p>
+      </div>
+      <div class="data-grid reveal">
+        <div class="data-cell">
+          <div class="data-val">2.4<small>×</small></div>
+          <div class="data-key">More missions per day</div>
+        </div>
+        <div class="data-cell">
+          <div class="data-val">93<small>%</small></div>
+          <div class="data-key">Fleet utilization <span style="text-transform:none">(vs 39% baseline)</span></div>
+        </div>
+        <div class="data-cell">
+          <div class="data-val">78<small>s</small></div>
+          <div class="data-key">Worst-case swap time</div>
+        </div>
+        <div class="data-cell">
+          <div class="data-val">&lt;3<small>%</small></div>
+          <div class="data-key">Pack cost per swap fee</div>
+        </div>
+      </div>
+      <div class="data-foot">Fleet simulation v2 · parameters locked to hardware design · July 2026</div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-band">
+    <div class="reveal">
+      <div class="eyebrow">Deployment</div>
+      <h2>Put a station on your site.</h2>
+      <p class="section-sub">We're deploying with industrial operators in the Permian Basin first. If continuous drone operations would change how your site runs, we should talk.</p>
+      <a class="btn btn-primary" onclick="go('contact')">Contact us</a>
+    </div>
+  </section>
+
+</div>
+
+<!-- ═══════════════ CONTACT ═══════════════ -->
+<div class="page" id="page-contact">
+  <div class="subpage">
+    <div class="eyebrow">Contact</div>
+    <h1>Talk to the team.</h1>
+    <p class="subpage-sub">Whether you operate a drone fleet, run an industrial site, or want to host a station — tell us about your operation and we'll get back within two business days.</p>
+
+    <div class="contact-grid">
+      <div>
+        <form id="contact-form" onsubmit="submitContact(event)">
+          <div class="form-group">
+            <label class="form-label" for="cf-name">Name</label>
+            <input class="form-input" id="cf-name" type="text" required placeholder="Your full name"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="cf-email">Work email</label>
+            <input class="form-input" id="cf-email" type="email" required placeholder="you@company.com"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="cf-company">Company</label>
+            <input class="form-input" id="cf-company" type="text" placeholder="Company or site name"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="cf-interest">I'm interested in</label>
+            <select class="form-select" id="cf-interest">
+              <option>Deploying stations on my site</option>
+              <option>Using Reswap with my drone fleet</option>
+              <option>Hosting a station (revenue share)</option>
+              <option>Partnership or investment</option>
+              <option>Something else</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="cf-message">Message</label>
+            <textarea class="form-textarea" id="cf-message" placeholder="Tell us about your operation — fleet size, site type, what you're trying to solve."></textarea>
+          </div>
+          <button class="btn btn-primary" type="submit">Send message</button>
+          <div class="form-success" id="form-success">Message received. We'll be in touch within two business days.</div>
+        </form>
+      </div>
+
+      <div class="contact-info-card">
+        <div class="info-row">
+          <div class="info-label">Email</div>
+          <div class="info-val"><a href="mailto:hello@reswap.io">hello@reswap.io</a></div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">First deployment region</div>
+          <div class="info-val">Permian Basin, Texas</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Operating basis</div>
+          <div class="info-val">Private &amp; controlled airspace under FAA Part 107</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Response time</div>
+          <div class="info-val">Within 2 business days</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PRIVACY ═══════════════ -->
+<div class="page" id="page-privacy">
+  <div class="legal">
+    <div class="eyebrow">Legal</div>
+    <h1>Privacy Policy</h1>
+    <div class="legal-updated">Last updated · July 2026</div>
+
+    <p>Reswap ("we," "us," or "our") builds battery-swap infrastructure and fleet-management software for industrial drone operations. This policy explains what information we collect, why we collect it, and how we handle it — both on this website and inside the Reswap platform.</p>
+
+    <h2>Information we collect</h2>
+    <p><strong>Website.</strong> When you contact us through this site, we collect the information you provide: your name, work email, company, and message. We use privacy-respecting analytics to understand aggregate site traffic; we do not build individual visitor profiles.</p>
+    <p><strong>Platform.</strong> When your organization uses the Reswap platform, we process operational data required to run the service:</p>
+    <ul>
+      <li>Account information — operator names, work emails, and roles within your organization</li>
+      <li>Fleet telemetry — drone position, battery state, and flight status during operations</li>
+      <li>Swap records — timestamps, drone and pack identifiers, cycle counts, and temperatures logged at each battery swap</li>
+      <li>Mission data — mission plans, progress, and completion records created by your operators</li>
+    </ul>
+
+    <h2>How we use it</h2>
+    <ul>
+      <li>To operate the service: routing drones to stations, managing swaps, and running your missions</li>
+      <li>To maintain safety: monitoring battery health and flagging packs for replacement</li>
+      <li>To improve battery performance models: swap records are aggregated and de-identified before analysis</li>
+      <li>To respond when you contact us</li>
+    </ul>
+    <p>We do not sell personal information. We do not use your data for advertising.</p>
+
+    <h2>Customer data isolation</h2>
+    <p>Each customer's fleet, station, and mission data is logically isolated within the platform. Operators can only access data belonging to their own organization. Aggregated battery-performance statistics used to improve our models are stripped of customer and site identifiers.</p>
+
+    <h2>Data retention</h2>
+    <p>Operational records are retained for the duration of your service agreement plus any period required for safety auditing and regulatory compliance. Contact-form submissions are retained for up to 24 months. You may request deletion of your personal information at any time, subject to legal retention requirements.</p>
+
+    <h2>Security</h2>
+    <p>Platform access is authenticated and role-based. Data is encrypted in transit. We follow industry-standard practices for credential storage and access control, and we review these practices as the platform evolves.</p>
+
+    <h2>Third parties</h2>
+    <p>We use a small number of infrastructure providers (hosting, email) to run our service. These providers process data on our behalf under contractual confidentiality obligations. We do not share your data with third parties for their own purposes.</p>
+
+    <h2>Your rights</h2>
+    <p>Depending on your jurisdiction, you may have rights to access, correct, or delete personal information we hold about you. To exercise any of these rights, contact us at <a href="mailto:privacy@reswap.io">privacy@reswap.io</a>.</p>
+
+    <h2>Changes to this policy</h2>
+    <p>We'll post any changes to this policy on this page and update the date above. Material changes affecting platform customers will be communicated directly.</p>
+
+    <h2>Contact</h2>
+    <p>Questions about this policy or our data practices: <a href="mailto:privacy@reswap.io">privacy@reswap.io</a>.</p>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">re<em>swap</em></div>
+      <div class="footer-tag">Battery-swap infrastructure for industrial drones. Under 90 seconds, back in the air.</div>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <div class="footer-col-title">Platform</div>
+        <a onclick="go('home');setTimeout(()=>scrollToId('stations'),50)">Stations</a>
+        <a onclick="go('home');setTimeout(()=>scrollToId('ground-control'),50)">Ground Control</a>
+        <a onclick="go('home');setTimeout(()=>scrollToId('mission-control'),50)">Mission Control</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Company</div>
+        <a onclick="go('contact')">Contact us</a>
+        <a onclick="go('privacy')">Privacy policy</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Reswap. All rights reserved.</span>
+    <span>Operating under FAA Part 107 in private &amp; controlled airspace.</span>
+  </div>
+</footer>
+
+<script>
+/* ── Page routing ── */
+function go(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  window.scrollTo({top:0,behavior:'instant'});
+  if(page==='home') requestAnimationFrame(observeReveals);
+}
+function goSection(e,id){
+  e.preventDefault();
+  const home=document.getElementById('page-home');
+  if(!home.classList.contains('active')){ go('home'); setTimeout(()=>scrollToId(id),60); }
+  else scrollToId(id);
+}
+function scrollToId(id){
+  const el=document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ── Contact form ── */
+function submitContact(e){
+  e.preventDefault();
+  document.getElementById('form-success').style.display='block';
+  document.getElementById('contact-form').reset();
+}
+
+/* ── Scroll reveal ── */
+let observer;
+function observeReveals(){
+  if(observer) observer.disconnect();
+  observer=new IntersectionObserver(entries=>{
+    entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('in'); observer.unobserve(en.target);} });
+  },{threshold:0.12});
+  document.querySelectorAll('#page-home .reveal').forEach(el=>observer.observe(el));
+}
+observeReveals();
+
+/* ── Swap-cycle hero animation ──
+   1 real second ≈ 1 simulated minute.
+   Baseline cycle: 25 fly + 40 charge = 65 min.
+   Reswap cycle:   25 fly + 1.3 swap  = 26.3 min.
+*/
+const trackBase=document.getElementById('track-base');
+const trackSwap=document.getElementById('track-swap');
+
+function buildTrack(track, segments, total){
+  let acc=0;
+  segments.forEach(s=>{
+    const el=document.createElement('div');
+    el.className='cycle-seg '+s.cls;
+    el.style.left=(acc/total*100)+'%';
+    el.style.width=(s.len/total*100)+'%';
+    el.textContent=s.label;
+    track.appendChild(el);
+    acc+=s.len;
+  });
+  const drone=document.createElement('div');
+  drone.className='cycle-drone';
+  track.appendChild(drone);
+  return drone;
+}
+
+/* Build one visible hour (60 min) of each timeline */
+const HOUR=60;
+function segsFor(cycleFly, cycleRest, restCls, restLabel){
+  const segs=[]; let t=0;
+  while(t<HOUR){
+    const fly=Math.min(cycleFly,HOUR-t);
+    segs.push({len:fly,cls:'seg-fly',label:fly>8?'FLIGHT':''});
+    t+=fly;
+    if(t>=HOUR)break;
+    const rest=Math.min(cycleRest,HOUR-t);
+    segs.push({len:rest,cls:restCls,label:rest>6?restLabel:''});
+    t+=rest;
+  }
+  return segs;
+}
+const droneBase=buildTrack(trackBase,segsFor(25,40,'seg-charge','CHARGING'),HOUR);
+const droneSwap=buildTrack(trackSwap,segsFor(25,1.3,'seg-swap',''),HOUR);
+
+let simT=0;
+let missionsBase=0, missionsSwap=0;
+let lastBaseCycle=-1, lastSwapCycle=-1;
+const reduced=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+function frame(){
+  simT+=1/60;               // 1 real sec = 1 sim min
+  const tB=simT%HOUR, tS=simT%HOUR;
+  droneBase.style.left=(tB/HOUR*100)+'%';
+  droneSwap.style.left=(tS/HOUR*100)+'%';
+
+  /* Count completed flights */
+  const baseCycle=Math.floor(simT/65);
+  const basePhase=simT%65;
+  const bDone=baseCycle+(basePhase>=25?1:0);
+  const swapCycle=Math.floor(simT/26.3);
+  const swapPhase=simT%26.3;
+  const sDone=swapCycle+(swapPhase>=25?1:0);
+  document.getElementById('stat-base').textContent=bDone;
+  document.getElementById('stat-swap').textContent=sDone;
+
+  requestAnimationFrame(frame);
+}
+if(!reduced) requestAnimationFrame(frame);
+else{
+  /* Static fallback */
+  document.getElementById('stat-base').textContent='≈9/day';
+  document.getElementById('stat-swap').textContent='≈22/day';
+  droneBase.style.display='none';
+  droneSwap.style.display='none';
+}
+</script>
+</body>
+</html>
